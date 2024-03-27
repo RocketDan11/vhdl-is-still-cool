@@ -83,7 +83,7 @@ when others => null;
 end case;
 end display_digit;
 
-type digit_array is array (5 downto 0) of std_logic_vector (5 downto 0);
+type digit_array is array (5 downto 0) of std_logic_vector (3 downto 0);
 signal digit: digit_array;
 begin
 gen0 : for i in 0 to 5 generate
