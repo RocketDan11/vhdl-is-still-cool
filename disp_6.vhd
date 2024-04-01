@@ -17,15 +17,15 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 
-entity disp_6 is
+entity disp6 is
   Port (
         clk:    in std_logic ;
         disp_in:    in std_logic_vector(23 downto 0 );
         an:     out std_logic_vector( 5 downto 0 );
         CA,CB,CC,CD,CE,CF,CG: out std_logic);
-end disp_6;
+end disp6;
 
-architecture Behavioral of disp_6 is
+architecture Behavioral of disp6 is
 procedure display_digit
     (signal digit: in std_logic_vector (3 downto 0);
     signal A, B, C, D, E, F, G : out std_logic) is
@@ -98,7 +98,7 @@ counter := counter + 1;
 if (counter > 50000) then
 counter := 0;
 place := place + 1;
-if place > 3 then
+if place > 5 then
 place := 0;
 end if;
 end if;
@@ -118,11 +118,10 @@ an <= "110111";
 display_digit(digit(3),CA,CB,CC,CD,CE,CF,CG);
 elsif (place = 4) then
 an <= "101111";
-display_digit(digit(3),CA,CB,CC,CD,CE,CF,CG);
+display_digit(digit(4),CA,CB,CC,CD,CE,CF,CG);
 else
 an <= "011111";
-display_digit(digit(3),CA,CB,CC,CD,CE,CF,CG);
+display_digit(digit(5),CA,CB,CC,CD,CE,CF,CG);
 end if;
 end process selector;
 end Behavioral;
-

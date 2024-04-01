@@ -15,12 +15,13 @@ port(
 end Clock_24h;
 
 architecture Behavioral of Clock_24h is
-    signal seconds, minutes: integer range 0 to 59 := 0;
-    signal hours: integer range 0 to 23 := 0;
+    signal seconds_count, minutes_count: integer range 0 to 59 := 0;
+    signal hours_count: integer range 0 to 23 := 0;
     signal an: std_logic_vector (5 downto 0);
-    signal time_display : std_logic_vector(23 downto 0); -- Intermediate signal for disp6 input
+    signal B_h_2, B_h_1, B_m_2, B_m_1, B_s_2, B_s_1: std_logic_vector (3 downto 0);
+    signal t_disp : std_logic_vector(23 downto 0);
 
-    component disp_6 is
+    component disp6 is
         Port (
             clk : in std_logic;
             disp_in : in std_logic_vector(23 downto 0);
@@ -29,97 +30,117 @@ architecture Behavioral of Clock_24h is
         );
     end component;
 
-signal inter: std_logic_vector(6 downto 0);
+signal intermediate_signal: std_logic_vector(6 downto 0);
 
 begin
     process(clk)
+    variable count: integer := 0;
     begin
         if rising_edge(clk) then
-            seconds <= seconds + 1;
-            if seconds = 59 then
-                seconds <= 0;
-                minutes <= minutes + 1;
-                if minutes = 59 then
-                    minutes <= 0;
-                    hours <= hours + 1;
-                    if hours = 23 then
-                        hours <= 0;
+            count := count +1;
+            if count = 10000000 then
+                count := 0;
+                seconds_count <= seconds_count + 1;
+                if seconds_count = 59 then
+                    seconds_count <= 0;
+                    minutes_count <= minutes_count + 1;
+                    if minutes_count = 59 then
+                        minutes_count <= 0;
+                        hours_count <= hours_count + 1;
+                        if hours_count = 23 then
+                            hours_count <= 0;
+                        end if;
                     end if;
                 end if;
             end if;
         end if;
     end process;
 
-    process (seconds, minutes, hours)
-    variable sec_1 : integer := 0;
-    variable sec_2 : integer := 0;
-    variable min_1 : integer := 0;
-    variable min_2 : integer := 0;
-    variable hr_1 : integer := 0;
-    variable hr_2 : integer := 0;
+    process (seconds_count, minutes_count, hours_count)
+    variable s_1 : integer := 0;
+    variable s_2 : integer := 0;
+    variable m_1 : integer := 0;
+    variable m_2 : integer := 0;
+    variable h_1 : integer := 0;
+    variable h_2 : integer := 0;
     begin
-        sec_1 := seconds mod 10;
-        sec_2 := seconds mod 10;
-        min_1 := minutes mod 10;
-        min_2 := minutes mod 10;
-        hr_1 := hours mod 10;
-        hr_2 := hours mod 10;
+        s_1 := seconds_count mod 10;
+        s_2 := seconds_count mod 10;
+        m_1 := minutes_count mod 10;
+        m_2 := minutes_count mod 10;
+        h_1 := hours_count mod 10;
+        h_2 := hours_count mod 10;
+
+        B_s_1 <= std_logic_vector(to_unsigned(s_1, 4));
+        B_s_2 <= std_logic_vector(to_unsigned(s_2, 4));
+        B_m_1 <= std_logic_vector(to_unsigned(m_1, 4));
+        B_m_2 <= std_logic_vector(to_unsigned(m_2, 4));
+        B_h_1 <= std_logic_vector(to_unsigned(h_1, 4));
+        B_h_2 <= std_logic_vector(to_unsigned(h_2, 4));
     end process;
     
-    disp6_instance: disp_6
+    disp6_instance: disp6
         port map (
             clk => clk,
-            disp_in => time_display,
+            disp_in => t_disp,
             an => an,
-            CA => inter(0), CB => inter(1), CC => inter(2), CD => inter(3), CE => inter(4), CF => inter(5), CG => inter(6)
+            CA => intermediate_signal(0), 
+            CB => intermediate_signal(1), 
+            CC => intermediate_signal(2), 
+            CD => intermediate_signal(3), 
+            CE => intermediate_signal(4), 
+            CF => intermediate_signal(5), 
+            CG => intermediate_signal(6)
         );
         
-second_7seg_1(0) <= inter(0) or an(0); 
-second_7seg_1(1) <= inter(1) or an(0); 
-second_7seg_1(2) <= inter(2) or an(0); 
-second_7seg_1(3) <= inter(3) or an(0); 
-second_7seg_1(4) <= inter(4) or an(0); 
-second_7seg_1(5) <= inter(5) or an(0); 
-second_7seg_1(6) <= inter(6) or an(0); 
+second_7seg_1(0) <= intermediate_signal(0) or an(0); 
+second_7seg_1(1) <= intermediate_signal(1) or an(0); 
+second_7seg_1(2) <= intermediate_signal(2) or an(0); 
+second_7seg_1(3) <= intermediate_signal(3) or an(0); 
+second_7seg_1(4) <= intermediate_signal(4) or an(0); 
+second_7seg_1(5) <= intermediate_signal(5) or an(0); 
+second_7seg_1(6) <= intermediate_signal(6) or an(0); 
 
-second_7seg_2(0) <= inter(0) or an(1); 
-second_7seg_2(1) <= inter(1) or an(1); 
-second_7seg_2(2) <= inter(2) or an(1); 
-second_7seg_2(3) <= inter(3) or an(1); 
-second_7seg_2(4) <= inter(4) or an(1); 
-second_7seg_2(5) <= inter(5) or an(1); 
-second_7seg_2(6) <= inter(6) or an(1); 
+second_7seg_2(0) <= intermediate_signal(0) or an(1); 
+second_7seg_2(1) <= intermediate_signal(1) or an(1); 
+second_7seg_2(2) <= intermediate_signal(2) or an(1); 
+second_7seg_2(3) <= intermediate_signal(3) or an(1); 
+second_7seg_2(4) <= intermediate_signal(4) or an(1); 
+second_7seg_2(5) <= intermediate_signal(5) or an(1); 
+second_7seg_2(6) <= intermediate_signal(6) or an(1); 
 
-minute_7seg_1(0) <= inter(0) or an(2); 
-minute_7seg_1(1) <= inter(1) or an(2); 
-minute_7seg_1(2) <= inter(2) or an(2); 
-minute_7seg_1(3) <= inter(3) or an(2); 
-minute_7seg_1(4) <= inter(4) or an(2); 
-minute_7seg_1(5) <= inter(5) or an(2); 
-minute_7seg_1(6) <= inter(6) or an(2); 
+minute_7seg_1(0) <= intermediate_signal(0) or an(2); 
+minute_7seg_1(1) <= intermediate_signal(1) or an(2); 
+minute_7seg_1(2) <= intermediate_signal(2) or an(2); 
+minute_7seg_1(3) <= intermediate_signal(3) or an(2); 
+minute_7seg_1(4) <= intermediate_signal(4) or an(2); 
+minute_7seg_1(5) <= intermediate_signal(5) or an(2); 
+minute_7seg_1(6) <= intermediate_signal(6) or an(2); 
 
-minute_7seg_2(0) <= inter(0) or an(3); 
-minute_7seg_2(1) <= inter(1) or an(3); 
-minute_7seg_2(2) <= inter(2) or an(3); 
-minute_7seg_2(3) <= inter(3) or an(3); 
-minute_7seg_2(4) <= inter(4) or an(3); 
-minute_7seg_2(5) <= inter(5) or an(3); 
-minute_7seg_2(6) <= inter(6) or an(3); 
+minute_7seg_2(0) <= intermediate_signal(0) or an(3); 
+minute_7seg_2(1) <= intermediate_signal(1) or an(3); 
+minute_7seg_2(2) <= intermediate_signal(2) or an(3); 
+minute_7seg_2(3) <= intermediate_signal(3) or an(3); 
+minute_7seg_2(4) <= intermediate_signal(4) or an(3); 
+minute_7seg_2(5) <= intermediate_signal(5) or an(3); 
+minute_7seg_2(6) <= intermediate_signal(6) or an(3); 
 
-hour_7seg_1(0) <= inter(0) or an(4); 
-hour_7seg_1(1) <= inter(1) or an(4); 
-hour_7seg_1(2) <= inter(2) or an(4); 
-hour_7seg_1(3) <= inter(3) or an(4); 
-hour_7seg_1(4) <= inter(4) or an(4); 
-hour_7seg_1(5) <= inter(5) or an(4); 
-hour_7seg_1(6) <= inter(6) or an(4); 
+hour_7seg_1(0) <= intermediate_signal(0) or an(4); 
+hour_7seg_1(1) <= intermediate_signal(1) or an(4); 
+hour_7seg_1(2) <= intermediate_signal(2) or an(4); 
+hour_7seg_1(3) <= intermediate_signal(3) or an(4); 
+hour_7seg_1(4) <= intermediate_signal(4) or an(4); 
+hour_7seg_1(5) <= intermediate_signal(5) or an(4); 
+hour_7seg_1(6) <= intermediate_signal(6) or an(4); 
 
-hour_7seg_2(0) <= inter(0) or an(5); 
-hour_7seg_2(1) <= inter(1) or an(5); 
-hour_7seg_2(2) <= inter(2) or an(5); 
-hour_7seg_2(3) <= inter(3) or an(5); 
-hour_7seg_2(4) <= inter(4) or an(5); 
-hour_7seg_2(5) <= inter(5) or an(5); 
-hour_7seg_2(6) <= inter(6) or an(5); 
+hour_7seg_2(0) <= intermediate_signal(0) or an(5); 
+hour_7seg_2(1) <= intermediate_signal(1) or an(5); 
+hour_7seg_2(2) <= intermediate_signal(2) or an(5); 
+hour_7seg_2(3) <= intermediate_signal(3) or an(5); 
+hour_7seg_2(4) <= intermediate_signal(4) or an(5); 
+hour_7seg_2(5) <= intermediate_signal(5) or an(5); 
+hour_7seg_2(6) <= intermediate_signal(6) or an(5); 
       
+t_disp <= B_h_2 & B_h_1 & B_m_2 & B_m_1 & B_s_2 & B_s_1;
+
 end Behavioral;
