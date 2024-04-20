@@ -1,3 +1,4 @@
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
@@ -26,9 +27,9 @@ architecture fsm of cpu is
     constant one : std_logic_vector(7 downto 0) := "00000001";
 
     -- FSM states
-    type state_t is (load_opcode, LDA_1, STA_1, ADD_1, JMP_1, JNC_1);
+    type state_t is (load_opcode, LDA_1, STA_1, ADD_1, JMP_1, JNC_1); --define custom type named state_t
     -- Signals used for debugging
-    signal state_watch : state_t;
+    signal state_watch : state_t; --declare a signal using this type
 
     -- CPU registers
     signal accu : std_logic_vector(7 downto 0) := "00000000"; -- Accumulator
@@ -101,7 +102,7 @@ begin -- fsm
                     state := load_opcode;
 
                 when JNC_1 => -- Jump if no carry flag is set
-                    if <condition for no carry flag> then -- Define the condition
+                    if < condition for no carry flag> then -- Define the condition
                         pc <= dr;
                     else
                         pc <= pc + one;
