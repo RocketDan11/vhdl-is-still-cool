@@ -1,4 +1,3 @@
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
@@ -32,6 +31,7 @@ architecture fsm of cpu is
     signal state_watch : state_t; --declare a signal using this type
 
     -- CPU registers
+    signal CF : std_logic := '0';  -- Carry flag, '0' indicates no carry, '1' indicates carry
     signal accu : std_logic_vector(7 downto 0) := "00000000"; -- Accumulator
     signal op_code : std_logic_vector(3 downto 0) := "0000"; -- Current op-code
     signal pc : std_logic_vector(7 downto 0) := "00000000"; -- Program counter
@@ -101,14 +101,14 @@ begin -- fsm
                     addr <= pc + one;
                     state := load_opcode;
 
-                when JNC_1 => -- Jump if no carry flag is set
-                    if < condition for no carry flag> then -- Define the condition
+                 when JNC_1 => -- Jump if no carry flag is set
+                    if CF = '0' then -- Define the condition
                         pc <= dr;
                     else
                         pc <= pc + one;
                     end if;
                     addr <= pc + one;
-                    state := load_opcode;
+                   state := load_opcode;
 
                 when others => -- Default case
                     state := load_opcode;
