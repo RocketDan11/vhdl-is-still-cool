@@ -1,3 +1,5 @@
+-----------------------------------------------------------------------------
+---
 -- Description: Converts a std_logic_vector(15 downto 0)
 -- to a four-digit seven segment hex display output
 --
@@ -8,74 +10,79 @@
 --
 -----------------------------------------------------------------------------
 ---
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+
 entity disp4 is
-Port (
-clk: in std_logic;
-disp_in : in std_logic_vector(15 downto 0);
-an : out std_logic_vector (3 downto 0);
-CA, CB, CC, CD, CE, CF, CG : out std_logic);
+  Port (
+        clk:    in std_logic ;
+        disp_in:    in std_logic_vector(15 downto 0 );
+        an:     out std_logic_vector( 3 downto 0 );
+        CA,CB,CC,CD,CE,CF,CG: out std_logic);
 end disp4;
+
 architecture Behavioral of disp4 is
 procedure display_digit
-(signal digit: in std_logic_vector (3 downto 0);
-signal A, B, C, D, E, F, G : out std_logic) is
+    (signal digit: in std_logic_vector (3 downto 0);
+    signal A, B, C, D, E, F, G : out std_logic) is
 begin
-case digit is
+    case digit is
 when "0000" => -- 0
-A <= '0'; B <= '0'; C <= '0'; D <= '0';
-E <= '0'; F <= '0'; G <= '1'; -- 0
+    A <= '0'; B <= '0'; C <= '0'; D <= '0';
+    E <= '0'; F <= '0'; G <= '1'; -- 0
 when "0001" => -- 1
-A <= '1'; B <= '0'; C <= '0'; D <= '1';
-E <= '1'; F <= '1'; G <= '1'; -- 1
+    A <= '1'; B <= '0'; C <= '0'; D <= '1';
+    E <= '1'; F <= '1'; G <= '1'; -- 1
 when "0010" => -- 02
-A <= '0'; B <= '0'; C <= '1'; D <= '0';
-E <= '0'; F <= '1'; G <= '0'; -- 2
+    A <= '0'; B <= '0'; C <= '1'; D <= '0';
+    E <= '0'; F <= '1'; G <= '0'; -- 2
 when "0011" => -- 03
-A <= '0'; B <= '0'; C <= '0'; D <= '0';
-E <= '1'; F <= '1'; G <= '0'; -- 3
+    A <= '0'; B <= '0'; C <= '0'; D <= '0';
+    E <= '1'; F <= '1'; G <= '0'; -- 3
 when "0100" => -- 04
-A <= '1'; B <= '0'; C <= '0'; D <= '1';
-E <= '1'; F <= '0'; G <= '0'; -- 4
+    A <= '1'; B <= '0'; C <= '0'; D <= '1';
+    E <= '1'; F <= '0'; G <= '0'; -- 4
 when "0101" => -- 05
-A <= '0'; B <= '1'; C <= '0'; D <= '0';
-E <= '1'; F <= '0'; G <= '0'; -- 5
+    A <= '0'; B <= '1'; C <= '0'; D <= '0';
+    E <= '1'; F <= '0'; G <= '0'; -- 5
 when "0110" => -- 06
-A <= '0'; B <= '1'; C <= '0'; D <= '0';
-E <= '0'; F <= '0'; G <= '0'; -- 6
+    A <= '0'; B <= '1'; C <= '0'; D <= '0';
+    E <= '0'; F <= '0'; G <= '0'; -- 6
 when "0111" => -- 07
-A <= '0'; B <= '0'; C <= '0'; D <= '1';
-E <= '1'; F <= '1'; G <= '1'; -- 7
+    A <= '0'; B <= '0'; C <= '0'; D <= '1';
+    E <= '1'; F <= '1'; G <= '1'; -- 7
 when "1000" => -- 08
-A <= '0'; B <= '0'; C <= '0'; D <= '0';
-E <= '0'; F <= '0'; G <= '0'; -- 8
+    A <= '0'; B <= '0'; C <= '0'; D <= '0';
+    E <= '0'; F <= '0'; G <= '0'; -- 8
 when "1001" => -- 09
-A <= '0'; B <= '0'; C <= '0'; D <= '0';
-E <= '1'; F <= '0'; G <= '0'; -- 9
+    A <= '0'; B <= '0'; C <= '0'; D <= '0';
+    E <= '1'; F <= '0'; G <= '0'; -- 9
 when "1010" => -- A
-A <= '0'; B <= '0'; C <= '0'; D <= '1';
-E <= '0'; F <= '0'; G <= '0';
+    A <= '0'; B <= '0'; C <= '0'; D <= '1';
+    E <= '0'; F <= '0'; G <= '0';
 when "1011" => -- B
-A <= '1'; B <= '1'; C <= '0'; D <= '0';
-E <= '0'; F <= '0'; G <= '0';
+    A <= '1'; B <= '1'; C <= '0'; D <= '0';
+    E <= '0'; F <= '0'; G <= '0';
 when "1100" => -- C
-A <= '0'; B <= '1'; C <= '1'; D <= '0';
-E <= '0'; F <= '0'; G <= '1';
+    A <= '0'; B <= '1'; C <= '1'; D <= '0';
+    E <= '0'; F <= '0'; G <= '1';
 when "1101" => -- D
-A <= '1'; B <= '0'; C <= '0'; D <= '0';
-E <= '0'; F <= '1'; G <= '0';
+    A <= '1'; B <= '0'; C <= '0'; D <= '0';
+    E <= '0'; F <= '1'; G <= '0';
 when "1110" => -- E
-A <= '0'; B <= '1'; C <= '1'; D <= '0';
-E <= '0'; F <= '0'; G <= '0';
+    A <= '0'; B <= '1'; C <= '1'; D <= '0';
+    E <= '0'; F <= '0'; G <= '0';
 when "1111" => -- F
-A <= '0'; B <= '1'; C <= '1'; D <= '1';
-E <= '0'; F <= '0'; G <= '0';
+    A <= '0'; B <= '1'; C <= '1'; D <= '1';
+    E <= '0'; F <= '0'; G <= '0';
 when others => null;
 end case;
 end display_digit;
+
 type digit_array is array (3 downto 0) of std_logic_vector (3 downto 0);
 signal digit: digit_array;
 begin
@@ -106,9 +113,9 @@ display_digit(digit(1),CA,CB,CC,CD,CE,CF,CG);
 elsif (place = 2) then
 an <= "1011";
 display_digit(digit(2),CA,CB,CC,CD,CE,CF,CG);
-else
+elsif (place =3) then
 an <= "0111";
-display_digit(digit(3),CA,CB,CC,CD,CE,CF,CG);
+else null;
 end if;
 end process selector;
 end Behavioral;
