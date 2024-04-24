@@ -32,7 +32,7 @@ architecture fsm of cpu is
   constant SUB : std_logic_Vector( 3 downto 0) := "0110";
   constant SHFT_L : std_logic_vector( 3 downto 0) := "0111";
   constant SHFT_R : std_logic_Vector( 3 downto 0) := "1000";
-  constant MUL : std_logic_Vector( 3 downto 0) := "1001";
+  --constant MUL : std_logic_Vector( 3 downto 0) := "1001";
   constant PRNG : std_logic_vector( 3 downto 0) := "1010";
   constant JSR : std_logic_vector( 3 downto 0) := "1011";
 
@@ -123,12 +123,13 @@ begin  --  fsm
             state := load_opcode;
           end if;
           
-        when STA_1 => -- Store accumulator to memory address
-          dw <= accu;  -- Store accumulator value to memory data output
-          addr <= dr; -- Memory address to write data
-          wr_en <= '1';  -- Enable memory write
-          state := STA_2; --Transition to next state required for store
-        when STA_2 => --Increment program counter, fix address
+        when STA_1 =>        -- Store accumulator to memory address
+          dw <= accu;        -- Store accumulator value to memory data output
+          addr <= dr;       -- Memory address to write data
+          wr_en <= '1';      -- Enable memory write
+          state := STA_2;   --Transition to next state required for store
+
+        when STA_2 =>       --Increment program counter, fix address
           pc <= pc + one;  -- Increment the program counter
           addr <= pc + one;
           wr_en <= '0';
@@ -142,33 +143,36 @@ begin  --  fsm
           wr_en <= '0'; --Memory read
           addr <= dr; --Memory address to read data
           state := ADD_2; --Transisition to next state required for addition
+
         when ADD_2 => --Put data in temp reg
           accu_temp <= dr; --Load temp accumulator from memory address
           state := ADD_3; --Transistion to next state required for addition
-        when ADD_3 => --Compute sum
-          temp_result <= ('0'&accu) + (accu_temp); --Extend to 9 bits and add
+
+        when ADD_3 =>   --Compute sum
+          temp_result <= ('0'&accu) + (accu_temp);   --Extend to 9 bits and add
           state := ADD_4;
-        when ADD_4 =>  --Move sum to accumulator
-          accu <= temp_result(7 downto 0); --Put 8 least sig bits into accumulator
-          carry <= temp_result(8); --Get carry flag
-          pc <= pc + one;   --Increment program counter
+
+        when ADD_4 =>          --Move sum to accumulator
+          accu <= temp_result(7 downto 0);   --Put 8 least sig bits into accumulator
+          carry <= temp_result(8);           --Get carry flag
+          pc <= pc + one;                   --Increment program counter
           addr <= pc + one;
-          if (return_flag = '1') then
+          if return_flag = '1' then
             state := JSR_3;
           else
             state := load_opcode;
           end if;
               
         when JMP_1 =>
-          addr <= dr;  --Jump to given address
-          pc <= dr; --Match program counter
+          addr <= dr;      --Jump to given address
+          pc <= dr;        --Match program counter
           state := load_opcode;  -- Transition back to loading opcode
           --JSR omitted, never JSR to JMP
           
         when JNC_1 => 
           if carry = '0' then  -- Check if carry flag is not set
             --Load the address to jump to from the memory
-            addr <= dr;  -- Update the program counter with the new address
+            addr <= dr;        -- Update the program counter with the new address
             pc <= dr;
           else
             pc <= pc + one;
@@ -177,44 +181,49 @@ begin  --  fsm
           state := load_opcode;  -- Transition back to loading opcode
           --JSR omitted, never JSR to JNC
         
-        when SUB_1 => --Read value from memory at addr
-          wr_en <= '0'; --Memory read
-          addr <= dr; --Memory address to read data
+        when SUB_1 =>     --Read value from memory at addr
+          wr_en <= '0';   --Memory read
+          addr <= dr;     --Memory address to read data
           state := SUB_2;
-        when SUB_2 => --Get value to subtract 
-          accu_temp <= dr; --Load temp accumulator with data from addr
+
+        when SUB_2 =>   --Get value to subtract 
+          accu_temp <= dr;   --Load temp accumulator with data from addr
           state := SUB_3;
-        when SUB_3 => --Compute subtraction
-          temp_result <= ('0' & accu) + not('0' & accu_temp) + (one); --2's complement addition for subtraction
+
+        when SUB_3 =>   --Compute subtraction
+          temp_result <= ('0' & accu) + not('0' & accu_temp) + (one);   --2's complement addition for subtraction
           STATE := SUB_4;
+
         when SUB_4 => --Move result to the accumulator
           accu <= temp_result(7 downto 0);
           carry <= temp_result(8);
           pc <= pc + one;
           addr <= pc + one;
-          if (return_flag = '1') then
+          if return_flag = '1' then
             state := JSR_3;
           else
             state := load_opcode;
           end if;
           
         when SHFT_L_1 =>
-          wr_en <= '0'; --No writing necessary
+          wr_en <= '0';   --No writing necessary
           shift_amount := dr;
           state := SHFT_L_2;
+
         when SHFT_L_2 => --Shifting state
-          if (shift_amount >= one) then --If a shift is required
+          if shift_amount >= one then     --If a shift is required
             accu <= accu(6 downto 0)&'0'; --Perform left shift, append 0
             shift_amount := shift_amount - one; --Decrement shift amount
           end if;
           state := SHFT_L_3; --Transition to check state
+
         when SHFT_L_3 =>
-          if (shift_amount >= one) then --Check if shift is required
-            state := SHFT_L_2; --Go back to shift state if more shift is required
+          if shift_amount >= one then   --Check if shift is required
+            state := SHFT_L_2;         --Go back to shift state if more shift is required
           else --If no more shift
             pc <= pc + one; --Proceed
             addr <= pc + one;
-            if (return_flag = '1') then
+            if return_flag = '1' then
                state := JSR_3;
             else
                state := load_opcode;
@@ -225,19 +234,21 @@ begin  --  fsm
           wr_en <= '0'; --No writing necessary
           shift_amount := dr;
           state := SHFT_R_2;
+
         when SHFT_R_2 => --Shift state
-          if (shift_amount >= one) then --If a shift is required
+          if shift_amount >= one then --If a shift is required
             accu <= '0'&accu(7 downto 1); --Perform right shift, append 0
             shift_amount := shift_amount - one; --Decrement shift amount
           end if;
           state := SHFT_R_3;
+
         when SHFT_R_3 =>
-          if (shift_amount >= 1) then
+          if shift_amount >= 1 then
             state := SHFT_R_2;
           else
             pc <= pc + one;
             addr <= pc + one;
-            if (return_flag = '1') then
+            if return_flag = '1' then
                 state := JSR_3;
             else
                 state := load_opcode;
@@ -249,8 +260,9 @@ begin  --  fsm
           wr_en <= '0'; 
           prng_seed <= dr; --User input will be the seed
           state := PRNG_2;
+
         when PRNG_2 =>
-          prng_temp := prng_seed(4) XOR prng_seed(3) XOR prng_seed(2) XOR prng_seed(1); --Generate PRN using LFSR method
+          prng_temp := prng_seed(4) XOR prng_seed(3) XOR prng_seed(2) XOR prng_seed(1);   --Generate PRN using LFSR method
           accu <= prng_temp & prng_seed( 7 downto 1); --Generate PRN using LFSR method found online;
           pc <= pc + one;
           addr <= pc + one;
@@ -262,17 +274,19 @@ begin  --  fsm
           
           
         when JSR_1 =>
-          wr_en <= '0'; --No writing necessary
-          return_addr <= pc; --Store current location
+          wr_en <= '0';       --No writing necessary
+          return_addr <= pc;  --Store current location
           return_flag <= '1'; --Signal to other routines to return to return_addr, not load_opcode;
           state := JSR_2;
+
         when JSR_2 =>
-          addr <= dr; --Jump to given address
-          pc <= dr; --Match program counter
+          addr <= dr;   --Jump to given address
+          pc <= dr;     --Match program counter
           state := load_opcode; --Fulfill sub-routine
-        when JSR_3 => --Return here after sub-routine
+
+        when JSR_3 =>         --Return here after sub-routine
           return_flag <= '0'; --Return has been completed
-          addr <= return_addr + one; --Go to next step from jump
+          addr <= return_addr + one;   --Go to next step from jump
           pc <= return_addr + one;
           state := load_opcode;
           
